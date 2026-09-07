@@ -1,0 +1,50 @@
+// ─── MobileNavigation Component ──────────────────────────────────────────────
+// Bottom tab bar for mobile viewports
+
+import { NavLink } from 'react-router-dom';
+import {
+  LayoutDashboard, Brain, Zap, Map, BarChart2,
+} from 'lucide-react';
+
+const MOBILE_TABS = [
+  { label: 'Home',     icon: LayoutDashboard, path: '/dashboard' },
+  { label: 'AI Tutor', icon: Brain,           path: '/ai-tutor' },
+  { label: 'Quiz',     icon: Zap,             path: '/quiz' },
+  { label: 'Roadmap',  icon: Map,             path: '/roadmap' },
+  { label: 'Progress', icon: BarChart2,       path: '/progress' },
+];
+
+export default function MobileNavigation() {
+  return (
+    <nav
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-lg"
+      aria-label="Mobile navigation"
+    >
+      <div className="flex">
+        {MOBILE_TABS.map(({ label, icon: Icon, path }) => (
+          <NavLink
+            key={path}
+            to={path}
+            className={({ isActive }) =>
+              `relative flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors ${
+                isActive
+                  ? 'text-indigo-600'
+                  : 'text-slate-400 hover:text-slate-600'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <Icon size={20} className={isActive ? 'text-indigo-600' : ''} />
+                <span className="text-[10px] font-medium">{label}</span>
+                {isActive && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-indigo-600 rounded-full" />
+                )}
+              </>
+            )}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  );
+}
