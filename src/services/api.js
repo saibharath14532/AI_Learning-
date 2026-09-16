@@ -52,8 +52,8 @@ export const authAPI = {
   verifyOTP:              (data)  => api.post('/auth/verify-otp', data),
   resendVerificationCode: (email) => api.post('/auth/resend-verification', { email: typeof email === 'object' ? email.email : email }),
   resendOTP:              (email) => api.post('/auth/resend-otp', { email: typeof email === 'object' ? email.email : email }),
-  getCode:                (email) => api.post('/auth/get-code', { email: typeof email === 'object' ? email.email : email }),
 };
+
 
 
 // ─── User API ─────────────────────────────────────────────────────────────────
@@ -231,14 +231,14 @@ export const adminAPI = {
       success: true,
       isFallback: true,
       analytics: {
-        usersOverview: { totalUsers: 142, newThisMonth: 38, activeDaily: 29 },
-        quizStats: { totalAttempts: 412, avgScore: 82.5, passRate: 91.2 },
-        topRoadmaps: [
-          { title: 'Full-Stack Web Development', count: 64 },
-          { title: 'Data Structures & Algorithms', count: 48 },
-          { title: 'Machine Learning Fundamentals', count: 30 },
-        ],
-        systemMetrics: { apiUptime: '99.98%', avgResponseTimeMs: 142 },
+        totalUsers: 142,
+        newUsersLast7Days: 38,
+        newUsersLast30Days: 110,
+        activeUsers7Days: 29,
+        totalQuizAttempts: 412,
+        avgQuizScore: 82.5,
+        completedRoadmaps: 28,
+        totalCertificates: 46,
       },
     })),
 

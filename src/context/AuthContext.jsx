@@ -99,6 +99,17 @@ export function AuthProvider({ children }) {
     } catch (err) {
       console.warn('Backend login attempt failed:', err);
       const emailLower = email.toLowerCase();
+
+      // Check if backend returned verification required (403 status code)
+      if (err.requiresVerification || (typeof err.message === 'string' && (err.message.toLowerCase().includes('verify') || err.message.toLowerCase().includes('otp')))) {
+        return {
+          success: false,
+          requiresVerification: true,
+          email: err.email || emailLower,
+          error: err.message || 'Email verification required. A fresh 6-digit OTP has been sent to your email.',
+        };
+      }
+
       // Fallback for demo account if backend down or fails
       if (emailLower.includes('admin') || emailLower === MOCK_ADMIN_CREDENTIALS.email) {
         const adminUser = switchToAdmin();

@@ -125,11 +125,17 @@ export const register = async (req, res) => {
         existingUser.otpExpiresAt = otpExpires;
         existingUser.otpAttempts = 0;
         existingUser.otpLastSentAt = new Date();
-        existingUser.verificationCode = otpCode;
-        existingUser.verificationCodeExpires = otpExpires;
+        existingUser.verificationCode = null;
+        existingUser.verificationCodeExpires = null;
         await existingUser.save();
 
-        await sendVerificationEmail(emailLower, otpCode, name);
+        const emailResult = await sendVerificationEmail(emailLower, otpCode, name);
+        if (emailResult && !emailResult.success) {
+          return res.status(400).json({
+            success: false,
+            message: emailResult.error || 'Failed to send verification email. Please try again.',
+          });
+        }
 
         return res.status(200).json({
           success: true,
@@ -151,12 +157,18 @@ export const register = async (req, res) => {
         otpExpiresAt: otpExpires,
         otpAttempts: 0,
         otpLastSentAt: new Date(),
-        verificationCode: otpCode,
-        verificationCodeExpires: otpExpires,
+        verificationCode: null,
+        verificationCodeExpires: null,
       });
 
       // Dispatch verification email
-      await sendVerificationEmail(emailLower, otpCode, name);
+      const emailResult = await sendVerificationEmail(emailLower, otpCode, name);
+      if (emailResult && !emailResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: emailResult.error || 'Failed to send verification email. Please try again.',
+        });
+      }
 
       return res.status(201).json({
         success: true,
@@ -242,11 +254,31 @@ export const login = async (req, res) => {
 
       // Check if email is verified
       if (user.role !== 'admin' && !user.isEmailVerified && !user.emailVerified) {
+        const otpCode = generateSecureOTP();
+        const otpHashValue = hashOTP(otpCode);
+        const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        user.otpHash = otpHashValue;
+        user.otpExpiresAt = otpExpires;
+        user.otpAttempts = 0;
+        user.otpLastSentAt = new Date();
+        user.verificationCode = null;
+        user.verificationCodeExpires = null;
+        await user.save();
+
+        const emailResult = await sendVerificationEmail(emailLower, otpCode, user.name || 'Learner');
+        if (emailResult && !emailResult.success) {
+          return res.status(400).json({
+            success: false,
+            message: emailResult.error || 'Failed to send verification email. Please try again.',
+          });
+        }
+
         return res.status(403).json({
           success: false,
           requiresVerification: true,
           email: emailLower,
-          message: 'Please verify your email address first.',
+          message: 'Your account requires email verification. A fresh 6-digit OTP code has been sent to your email address.',
         });
       }
 
@@ -289,11 +321,24 @@ export const login = async (req, res) => {
         });
       }
       if (!offlineUser.isVerified) {
+        const otpCode = generateSecureOTP();
+        const otpHashValue = hashOTP(otpCode);
+        const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
+
+        offlineUser.code = otpCode;
+        offlineUser.hash = otpHashValue;
+        offlineUser.expires = otpExpires;
+        offlineUser.lastSent = Date.now();
+        offlineUser.attempts = 0;
+        offlineVerificationStore.set(emailLower, offlineUser);
+
+        await sendVerificationEmail(emailLower, otpCode, offlineUser.name || 'Learner');
+
         return res.status(403).json({
           success: false,
           requiresVerification: true,
           email: emailLower,
-          message: 'Please verify your email address first.',
+          message: 'Your account requires email verification. A fresh 6-digit OTP code has been sent to your email address.',
         });
       }
       const demoUser = getDemoUserObj(emailLower, offlineUser.name);
@@ -413,19 +458,17 @@ export const verifyEmail = async (req, res) => {
       }
 
       // Check expiration (5 minutes)
-      const expiry = user.otpExpiresAt || user.verificationCodeExpires;
+      const expiry = user.otpExpiresAt;
       if (expiry && new Date() > new Date(expiry)) {
         return res.status(400).json({
           success: false,
-          message: 'This verification code has expired. Please request a new code.',
+          message: 'Verification code expired. Please request a new code.',
         });
       }
 
-      // Verify OTP hash or verificationCode
+      // Verify OTP hash securely
       const submittedHash = hashOTP(submittedCode);
-      const isMatch =
-        (user.otpHash && user.otpHash === submittedHash) ||
-        (user.verificationCode && user.verificationCode === submittedCode);
+      const isMatch = user.otpHash && user.otpHash === submittedHash;
 
       if (!isMatch) {
         user.otpAttempts = (user.otpAttempts || 0) + 1;
@@ -434,7 +477,7 @@ export const verifyEmail = async (req, res) => {
         return res.status(400).json({
           success: false,
           message: remaining > 0
-            ? `Incorrect verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
+            ? `Invalid verification code. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`
             : 'Too many incorrect attempts. Please request a new verification code.',
         });
       }
@@ -593,11 +636,17 @@ export const resendVerificationCode = async (req, res) => {
       user.otpExpiresAt = expires;
       user.otpAttempts = 0;
       user.otpLastSentAt = new Date();
-      user.verificationCode = newCode;
-      user.verificationCodeExpires = expires;
+      user.verificationCode = null;
+      user.verificationCodeExpires = null;
       await user.save();
 
-      await sendVerificationEmail(emailLower, newCode, userName);
+      const emailResult = await sendVerificationEmail(emailLower, newCode, userName);
+      if (emailResult && !emailResult.success) {
+        return res.status(400).json({
+          success: false,
+          message: emailResult.error || 'Failed to send verification email. Please try again.',
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -658,66 +707,14 @@ export const resendVerificationCode = async (req, res) => {
 };
 
 
-// @desc    Get active 6-digit OTP verification code for email
+// @desc    Deprecated endpoint - Plaintext verification code retrieval disabled
 // @route   POST /api/auth/get-code
-// @access  Public
+// @access  Disabled
 export const getVerificationCode = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({
-        success: false,
-        message: 'Email address is required',
-      });
-    }
-
-    const emailLower = email.toLowerCase().trim();
-    let code = null;
-    let expires = null;
-
-    if (mongoose.connection.readyState === 1) {
-      const user = await User.findOne({ email: emailLower });
-      if (user && user.verificationCode) {
-        code = user.verificationCode;
-        expires = user.verificationCodeExpires;
-      }
-    }
-
-    if (!code) {
-      const cached = offlineVerificationStore.get(emailLower);
-      if (cached) {
-        code = cached.code;
-        expires = cached.expires;
-      }
-    }
-
-    // If no code exists, generate one now
-    if (!code || (expires && new Date() > expires)) {
-      code = generateOTPCode();
-      expires = new Date(Date.now() + 10 * 60 * 1000);
-      if (mongoose.connection.readyState === 1) {
-        const user = await User.findOne({ email: emailLower });
-        if (user) {
-          user.verificationCode = code;
-          user.verificationCodeExpires = expires;
-          await user.save();
-        }
-      }
-      offlineVerificationStore.set(emailLower, { code, expires, name: 'Learner' });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: `Your 6-digit verification code is: ${code}`,
-      code,
-    });
-  } catch (error) {
-    console.error(`Get Code Error: ${error.message}`);
-    return res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve verification code.',
-    });
-  }
+  return res.status(403).json({
+    success: false,
+    message: 'Direct code retrieval endpoint disabled for security. Check your email inbox for the 6-digit verification code.',
+  });
 };
 
 

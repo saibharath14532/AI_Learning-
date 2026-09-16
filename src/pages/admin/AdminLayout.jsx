@@ -6,14 +6,9 @@ import {
 } from 'lucide-react';
 
 const ADMIN_TABS = [
-  { label: 'Overview',     icon: LayoutDashboard, path: '/admin' },
-  { label: 'Users',        icon: Users,           path: '/admin/users' },
-  { label: 'Roadmaps',     icon: Map,             path: '/admin/roadmaps' },
-  { label: 'Quizzes',      icon: Zap,             path: '/admin/quizzes' },
-  { label: 'Flashcards',   icon: Layers,          path: '/admin/flashcards' },
-  { label: 'Notes',        icon: FileText,        path: '/admin/notes' },
-  { label: 'Certificates', icon: Award,           path: '/admin/certificates' },
-  { label: 'Analytics',    icon: BarChart2,       path: '/admin/analytics' },
+  { label: 'Overview',  icon: LayoutDashboard, path: '/admin' },
+  { label: 'Users',     icon: Users,           path: '/admin/users' },
+  { label: 'Analytics', icon: BarChart2,       path: '/admin/analytics' },
 ];
 
 export default function AdminLayout() {

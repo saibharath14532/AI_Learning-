@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { Sparkles, ArrowLeft, MailOpen, Mail, RefreshCw, KeyRound } from 'lucide-react';
+import { Sparkles, ArrowLeft, MailOpen, Mail, RefreshCw } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authAPI } from '../../services/api';
 import Button from '../../components/common/Button';
@@ -15,7 +15,6 @@ export default function EmailVerification() {
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
-  const [fetchingCode, setFetchingCode] = useState(false);
   const [timer, setTimer] = useState(59);
   const [errorMsg, setErrorMsg] = useState('');
   const inputsRef = useRef([]);
@@ -56,38 +55,6 @@ export default function EmailVerification() {
     }
   };
 
-  const handleGetCode = async () => {
-    if (!email) {
-      toast.error('Please enter your email address first.');
-      return;
-    }
-
-    setFetchingCode(true);
-    setErrorMsg('');
-    try {
-      const res = await authAPI.getCode(email.trim());
-      setFetchingCode(false);
-      if (res.success && res.code) {
-        const digits = res.code.toString().split('');
-        setCode(digits);
-        toast.success(`Verification Code retrieved: ${res.code}`);
-      } else {
-        toast.error(res.message || 'Failed to retrieve code.');
-      }
-    } catch (err) {
-      setFetchingCode(false);
-      const isNetworkErr = err.code === 'ERR_NETWORK' || (typeof err.message === 'string' && err.message.toLowerCase().includes('network error'));
-      if (isNetworkErr) {
-        const fallbackCode = ['1', '2', '3', '4', '5', '6'];
-        setCode(fallbackCode);
-        toast.success('Offline Code retrieved: 123456');
-        return;
-      }
-      const msg = err.message || err.error || (typeof err === 'string' ? err : 'Failed to retrieve verification code.');
-      toast.error(msg);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
@@ -107,7 +74,7 @@ export default function EmailVerification() {
 
     setLoading(true);
     try {
-      const res = await authAPI.verifyEmail({ email: email.trim(), code: joinedCode });
+      const res = await authAPI.verifyEmail({ email: email.trim(), otp: joinedCode, code: joinedCode });
       setLoading(false);
 
       if (res.success) {
@@ -123,22 +90,6 @@ export default function EmailVerification() {
       }
     } catch (err) {
       setLoading(false);
-      const isNetworkErr = err.code === 'ERR_NETWORK' || (typeof err.message === 'string' && err.message.toLowerCase().includes('network error'));
-      if (isNetworkErr) {
-        const offlineUser = {
-          id: `user_${Date.now()}`,
-          _id: `user_${Date.now()}`,
-          name: email.split('@')[0] || 'Learner',
-          email: email,
-          role: 'student',
-          isEmailVerified: true,
-        };
-        localStorage.setItem('ailp_user', JSON.stringify(offlineUser));
-        localStorage.setItem('ailp_token', `jwt_verified_${Date.now()}`);
-        toast.success('Account verified successfully!');
-        navigate('/dashboard');
-        return;
-      }
       const msg = err.message || err.error || (typeof err === 'string' ? err : 'Email verification failed.');
       setErrorMsg(msg);
       toast.error(msg);
@@ -159,23 +110,12 @@ export default function EmailVerification() {
       setResending(false);
       if (res.success) {
         setTimer(59);
-        if (res.code) {
-          const digits = res.code.toString().split('');
-          setCode(digits);
-        }
         toast.success(res.message || `A fresh 6-digit code has been dispatched to ${email}.`);
       } else {
         toast.error(res.message || 'Failed to resend code.');
       }
     } catch (err) {
       setResending(false);
-      const isNetworkErr = err.code === 'ERR_NETWORK' || (typeof err.message === 'string' && err.message.toLowerCase().includes('network error'));
-      if (isNetworkErr) {
-        setTimer(59);
-        setCode(['1', '2', '3', '4', '5', '6']);
-        toast.success(`A fresh 6-digit code has been dispatched to ${email}!`);
-        return;
-      }
       const msg = err.message || err.error || (typeof err === 'string' ? err : 'Failed to resend verification code.');
       toast.error(msg);
     }
@@ -201,9 +141,9 @@ export default function EmailVerification() {
             <div className="w-12 h-12 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mx-auto mb-4">
               <MailOpen size={24} />
             </div>
-            <h2 className="text-lg font-bold text-slate-100 mb-1">Verify Your Email Address</h2>
+            <h2 className="text-lg font-bold text-slate-100 mb-1">Verify your email</h2>
             <p className="text-slate-400 text-xs leading-relaxed">
-              We have sent a 6-digit security code to your email. Enter the code below or click <strong>Get Code</strong> to activate your account.
+              Enter the 6-digit code sent to <strong className="text-slate-200">{email || 'your email address'}</strong>
             </p>
           </div>
 
@@ -230,19 +170,6 @@ export default function EmailVerification() {
                 />
                 <Mail size={16} className="text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
               </div>
-              
-              <div className="flex justify-between items-center mt-2.5 pt-1">
-                <span className="text-[11px] text-slate-400">Need your verification code?</span>
-                <button
-                  type="button"
-                  onClick={handleGetCode}
-                  disabled={fetchingCode}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-400/30 text-indigo-200 text-xs font-semibold transition-all cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
-                >
-                  {fetchingCode ? <RefreshCw size={13} className="animate-spin text-indigo-300" /> : <KeyRound size={13} className="text-indigo-300" />}
-                  Get Code
-                </button>
-              </div>
             </div>
 
             <div>
@@ -267,7 +194,7 @@ export default function EmailVerification() {
             </div>
 
             <Button type="submit" variant="gradient" fullWidth isLoading={loading} className="py-3 text-sm font-semibold">
-              Verify & Activate Account
+              Verify Email
             </Button>
           </form>
 
@@ -275,7 +202,7 @@ export default function EmailVerification() {
             <p className="text-slate-400 text-xs">
               Didn't receive the email code?{' '}
               {timer > 0 ? (
-                <span className="text-indigo-400 font-medium">Resend in {timer}s</span>
+                <span className="text-indigo-400 font-medium">Resend code in {timer}s</span>
               ) : (
                 <button
                   type="button"
@@ -300,3 +227,4 @@ export default function EmailVerification() {
     </div>
   );
 }
+

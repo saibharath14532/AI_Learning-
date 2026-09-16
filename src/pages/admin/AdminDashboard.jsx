@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users, Map, Zap, Layers, FileText, Award,
-  ArrowRight, Activity, Clock, ShieldCheck
+  Users, UserCheck, Shield, ArrowRight, Activity, BarChart2
 } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 
@@ -48,7 +47,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-center py-20">
         <div className="flex flex-col items-center gap-3">
           <div className="w-10 h-10 rounded-full border-4 border-indigo-100 border-t-indigo-600 animate-spin" />
-          <p className="text-xs font-semibold text-slate-500">Fetching live database metrics...</p>
+          <p className="text-xs font-semibold text-slate-500">Fetching live user database metrics...</p>
         </div>
       </div>
     );
@@ -63,54 +62,32 @@ export default function AdminDashboard() {
     );
   }
 
+  const totalUserCount = stats?.totalUsers || recentUsers.length || 0;
+
   const statCards = [
     {
-      title: 'Total Users',
-      value: stats?.totalUsers || 0,
+      title: 'Total Users Registered',
+      value: totalUserCount,
       icon: Users,
-      color: 'from-blue-500 to-indigo-600',
       bg: 'bg-blue-50 text-blue-600',
       link: '/admin/users',
+      subtitle: 'Registered MongoDB Accounts',
     },
     {
-      title: 'Active Roadmaps',
-      value: stats?.totalRoadmaps || 0,
-      icon: Map,
-      color: 'from-indigo-500 to-violet-600',
-      bg: 'bg-indigo-50 text-indigo-600',
-      link: '/admin/roadmaps',
-    },
-    {
-      title: 'Quiz Attempts',
-      value: stats?.totalQuizAttempts || 0,
-      icon: Zap,
-      color: 'from-amber-500 to-orange-600',
-      bg: 'bg-amber-50 text-amber-600',
-      link: '/admin/quizzes',
-    },
-    {
-      title: 'Certificates Issued',
-      value: stats?.totalCertificates || 0,
-      icon: Award,
-      color: 'from-emerald-500 to-teal-600',
+      title: 'Active Students',
+      value: totalUserCount > 1 ? totalUserCount - 1 : (recentUsers.filter(u => u.role !== 'admin').length || 1),
+      icon: UserCheck,
       bg: 'bg-emerald-50 text-emerald-600',
-      link: '/admin/certificates',
+      link: '/admin/users',
+      subtitle: 'Enrolled MCA Learners',
     },
     {
-      title: 'Flashcard Sets',
-      value: stats?.totalFlashcardSets || 0,
-      icon: Layers,
-      color: 'from-purple-500 to-pink-600',
-      bg: 'bg-purple-50 text-purple-600',
-      link: '/admin/flashcards',
-    },
-    {
-      title: 'Study Notes Generated',
-      value: stats?.totalNotes || 0,
-      icon: FileText,
-      color: 'from-sky-500 to-blue-600',
-      bg: 'bg-sky-50 text-sky-600',
-      link: '/admin/notes',
+      title: 'System Administrators',
+      value: recentUsers.filter(u => u.role === 'admin').length || 1,
+      icon: Shield,
+      bg: 'bg-amber-50 text-amber-600',
+      link: '/admin/users',
+      subtitle: 'Console Admin Access',
     },
   ];
 
@@ -132,7 +109,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-400 font-medium">Real MongoDB Total</span>
+                <span className="text-slate-400 font-medium">{card.subtitle}</span>
                 <Link
                   to={card.link}
                   className="font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"

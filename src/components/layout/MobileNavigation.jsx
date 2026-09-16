@@ -2,11 +2,12 @@
 // Bottom tab bar for mobile viewports
 
 import { NavLink } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
-  LayoutDashboard, Brain, Zap, Map, BarChart2,
+  LayoutDashboard, Brain, Zap, Map, BarChart2, Users,
 } from 'lucide-react';
 
-const MOBILE_TABS = [
+const USER_MOBILE_TABS = [
   { label: 'Home',     icon: LayoutDashboard, path: '/dashboard' },
   { label: 'AI Tutor', icon: Brain,           path: '/ai-tutor' },
   { label: 'Quiz',     icon: Zap,             path: '/quiz' },
@@ -14,14 +15,23 @@ const MOBILE_TABS = [
   { label: 'Progress', icon: BarChart2,       path: '/progress' },
 ];
 
+const ADMIN_MOBILE_TABS = [
+  { label: 'Admin',     icon: LayoutDashboard, path: '/admin' },
+  { label: 'Users',     icon: Users,           path: '/admin/users' },
+  { label: 'Analytics', icon: BarChart2,       path: '/admin/analytics' },
+];
+
 export default function MobileNavigation() {
+  const { user } = useAuth();
+  const tabs = user?.role === 'admin' ? ADMIN_MOBILE_TABS : USER_MOBILE_TABS;
+
   return (
     <nav
       className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-slate-200 shadow-lg"
       aria-label="Mobile navigation"
     >
       <div className="flex">
-        {MOBILE_TABS.map(({ label, icon: Icon, path }) => (
+        {tabs.map(({ label, icon: Icon, path }) => (
           <NavLink
             key={path}
             to={path}

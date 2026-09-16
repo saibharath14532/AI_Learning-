@@ -59,10 +59,10 @@ export default function AdminAnalytics() {
             <p className="text-xs font-semibold text-indigo-100">Total Registered Users</p>
             <Users size={18} className="text-indigo-200" />
           </div>
-          <p className="text-3xl font-extrabold mt-2">{data.totalUsers}</p>
+          <p className="text-3xl font-extrabold mt-2">{data.totalUsers ?? 0}</p>
           <div className="mt-3 pt-2 border-t border-indigo-400/30 flex items-center justify-between text-[11px] text-indigo-100">
-            <span>Last 7 Days: +{data.newUsersLast7Days}</span>
-            <span>Last 30 Days: +{data.newUsersLast30Days}</span>
+            <span>Last 7 Days: +{data.newUsersLast7Days ?? 0}</span>
+            <span>Last 30 Days: +{data.newUsersLast30Days ?? 0}</span>
           </div>
         </div>
 
@@ -71,7 +71,7 @@ export default function AdminAnalytics() {
             <p className="text-xs font-semibold text-violet-100">Active Students (7D)</p>
             <Activity size={18} className="text-violet-200" />
           </div>
-          <p className="text-3xl font-extrabold mt-2">{data.activeUsers7Days}</p>
+          <p className="text-3xl font-extrabold mt-2">{data.activeUsers7Days ?? 0}</p>
           <p className="text-[11px] text-violet-100 mt-3 pt-2 border-t border-violet-400/30">
             Distinct users active in quizzes or learning
           </p>
@@ -82,9 +82,9 @@ export default function AdminAnalytics() {
             <p className="text-xs font-semibold text-amber-100">Quiz Attempts & Avg</p>
             <Zap size={18} className="text-amber-200" />
           </div>
-          <p className="text-3xl font-extrabold mt-2">{data.totalQuizAttempts}</p>
+          <p className="text-3xl font-extrabold mt-2">{data.totalQuizAttempts ?? 0}</p>
           <p className="text-[11px] text-amber-100 mt-3 pt-2 border-t border-amber-400/30">
-            Average Score: {data.avgQuizScore}%
+            Average Score: {data.avgQuizScore ?? 0}%
           </p>
         </div>
 
@@ -93,9 +93,9 @@ export default function AdminAnalytics() {
             <p className="text-xs font-semibold text-emerald-100">Completed Roadmaps</p>
             <Award size={18} className="text-emerald-200" />
           </div>
-          <p className="text-3xl font-extrabold mt-2">{data.completedRoadmaps}</p>
+          <p className="text-3xl font-extrabold mt-2">{data.completedRoadmaps ?? 0}</p>
           <p className="text-[11px] text-emerald-100 mt-3 pt-2 border-t border-emerald-400/30">
-            Certificates Issued: {data.totalCertificates}
+            Certificates Issued: {data.totalCertificates ?? 0}
           </p>
         </div>
       </div>
@@ -110,15 +110,15 @@ export default function AdminAnalytics() {
           <div className="space-y-3 text-xs">
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">Total Registered Accounts</span>
-              <span className="font-bold text-indigo-600 text-sm">{data.totalUsers}</span>
+              <span className="font-bold text-indigo-600 text-sm">{data.totalUsers ?? 0}</span>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">New Registrations (Past 7 Days)</span>
-              <span className="font-bold text-emerald-600 text-sm">+{data.newUsersLast7Days}</span>
+              <span className="font-bold text-emerald-600 text-sm">+{data.newUsersLast7Days ?? 0}</span>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">New Registrations (Past 30 Days)</span>
-              <span className="font-bold text-blue-600 text-sm">+{data.newUsersLast30Days}</span>
+              <span className="font-bold text-blue-600 text-sm">+{data.newUsersLast30Days ?? 0}</span>
             </div>
           </div>
         </div>
@@ -131,15 +131,15 @@ export default function AdminAnalytics() {
           <div className="space-y-3 text-xs">
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">Total Quiz Attempts Evaluated</span>
-              <span className="font-bold text-amber-600 text-sm">{data.totalQuizAttempts}</span>
+              <span className="font-bold text-amber-600 text-sm">{data.totalQuizAttempts ?? 0}</span>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">Overall Average Quiz Score</span>
-              <span className="font-bold text-violet-600 text-sm">{data.avgQuizScore}%</span>
+              <span className="font-bold text-violet-600 text-sm">{data.avgQuizScore ?? 0}%</span>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
               <span className="font-semibold text-slate-700">Roadmaps Reaching 100% Completion</span>
-              <span className="font-bold text-emerald-600 text-sm">{data.completedRoadmaps}</span>
+              <span className="font-bold text-emerald-600 text-sm">{data.completedRoadmaps ?? 0}</span>
             </div>
           </div>
         </div>

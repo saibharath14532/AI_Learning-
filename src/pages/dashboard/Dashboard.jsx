@@ -1,3 +1,5 @@
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import WelcomeCard from './WelcomeCard';
 import DailyGoal from './DailyGoal';
 import StreakCard from './StreakCard';
@@ -6,6 +8,12 @@ import RecommendedTopics from './RecommendedTopics';
 import WeeklyAnalytics from './WeeklyAnalytics';
 
 export default function Dashboard() {
+  const { user } = useAuth();
+
+  if (user?.role === 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Top Welcome Banner */}

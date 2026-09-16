@@ -1,8 +1,20 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables immediately before route imports
+dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import connectDB from './config/db.js';
+import { verifySMTPConnection } from './services/emailService.js';
+
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import roadmapRoutes from './routes/roadmapRoutes.js';
@@ -15,21 +27,12 @@ import certificateRoutes from './routes/certificateRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Load environment variables from backend/.env or root .env
-dotenv.config({ path: path.join(__dirname, '.env') });
-dotenv.config();
-
-// Connect to Database
+// Connect to Database & Verify SMTP
 connectDB();
-
+verifySMTPConnection();
 
 const app = express();
+
 
 // Middlewares
 app.use(cors({

@@ -5,10 +5,10 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, Brain, Zap, Map, Layers, FileText,
   BarChart2, Flame, Award, User, Settings, LogOut, Sparkles,
-  ChevronRight, ShieldAlert
+  ChevronRight, ShieldAlert, Users
 } from 'lucide-react';
 
-const NAV_ITEMS = [
+const USER_NAV_ITEMS = [
   { label: 'Dashboard',     icon: LayoutDashboard, path: '/dashboard' },
   { label: 'AI Tutor',      icon: Brain,           path: '/ai-tutor' },
   { label: 'Doubt Solver',  icon: Sparkles,        path: '/doubt-solver' },
@@ -22,6 +22,13 @@ const NAV_ITEMS = [
   { label: 'Profile',       icon: User,            path: '/profile' },
 ];
 
+const ADMIN_NAV_ITEMS = [
+  { label: 'Admin Dashboard', icon: LayoutDashboard, path: '/admin' },
+  { label: 'User Management', icon: Users,           path: '/admin/users' },
+  { label: 'Analytics',       icon: BarChart2,       path: '/admin/analytics' },
+  { label: 'Profile',         icon: User,            path: '/profile' },
+];
+
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -31,9 +38,7 @@ export default function Sidebar({ isOpen, onClose }) {
     navigate('/login');
   };
 
-  const navList = user?.role === 'admin' 
-    ? [...NAV_ITEMS, { label: 'Admin Portal', icon: ShieldAlert, path: '/admin' }]
-    : NAV_ITEMS;
+  const navList = user?.role === 'admin' ? ADMIN_NAV_ITEMS : USER_NAV_ITEMS;
 
   return (
     <>
